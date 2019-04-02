@@ -4,21 +4,25 @@ import random
 import numpy as np
 import time
 import tensorflow as tf
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, LSTM, CuDNNLSTM, BatchNormalization
-from tensorflow.keras.callbacks import TensorBoard,ModelCheckpoint
+from tensorflow.python.keras.models import Sequential
+from tensorflow.python.keras.layers import Dense, Dropout, LSTM, BatchNormalization
+from tensorflow.python.keras.callbacks import TensorBoard,ModelCheckpoint
 ## All data is normalized
 #data is normalized, target class UP or DOWN depending on previsous 24h
+# TO RUN TENSORBOARD: cd /afs/kth.se/home/b/a/badal/.local/lib/python3.5/site-packages/nsorboard
+# then: python3 main.py --logdir=/afs/kth.se/home/b/a/badal/EPF_ML/logs
+
 pd.set_option('display.max_columns', 30)
 data = pd.read_csv("electricity-normalized.csv")
-seq_len = 500
+seq_len = 200
 future_pred = 48
 ratio_pred = "nsw"
-EPOCHS = 10
+EPOCHS = 5
 BATCH_SIZE = 64
-NAME = f"{seq_len}-SEQ-{EPOCHS}-EPOCHS-{BATCH_SIZE}-BATCH_SIZE-{int(time.time())}"
+columns = ["date","period","nswprice","nswdemand","vicprice","vicdemand","class"]
+NAME = "{}-SEQ-{}-EPOCHS-{}-BATCH_SIZE-{}".format(seq_len,EPOCHS,BATCH_SIZE,int(time.time()))
+data = data[["date","period","nswprice","nswdemand","class"]]
 
-data = data[[f"date",f"period",f"nswprice",f"nswdemand",f"vicprice",f"vicdemand",f"class"]]
 
 def preprocess(df):
 
@@ -79,7 +83,7 @@ print(validation_data.head())
 train_x,train_y = preprocess(main_data)
 validation_x,validation_y = preprocess(validation_data)
 
-print(f"train data: {len(train_x)} validation: {len(validation_x)}")
+print("train data: {} validation: {}".format(len(train_x),len(validation_x)))
 
 
 
@@ -99,11 +103,11 @@ model.add(Dropout(0.2))
 model.add(Dense(2,activation="softmax"))
 
 
-opt = tf.keras.optimizers.Adam(lr=0.001,decay=1e-6)
+opt = tf.keras.optimizers.Adam(lr=0.00001,decay=1e-6)
 
 model.compile(loss='sparse_categorical_crossentropy',optimizer = opt,metrics=['accuracy'])
 
-tensorboard = TensorBoard(log_dir=f'logs/{NAME}')
+tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
 filepath = "RNN_Final-{epoch:02d}-{val_acc:.3f}"
 
