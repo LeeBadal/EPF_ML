@@ -105,7 +105,7 @@ model.add(Dense(2,activation="softmax"))
 
 opt = tf.keras.optimizers.Adam(lr=0.00001,decay=1e-6)
 
-model.compile(loss='sparse_categorical_crossentropy',optimizer = opt,metrics=['accuracy'])
+model.compile(loss='mean_squared_error',optimizer = opt,metrics=['accuracy'])
 
 tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
