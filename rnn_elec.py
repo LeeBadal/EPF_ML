@@ -15,14 +15,17 @@ from tensorflow.python.keras.callbacks import TensorBoard,ModelCheckpoint
 
 pd.set_option('display.max_columns', 30)
 data = pd.read_csv("electricity-normalized.csv")
-seq_len = 200
+seq_len = 150
 future_pred = 48
 ratio_pred = "nsw"
 EPOCHS = 10
 BATCH_SIZE = 64
+VAL_PERCENT = 15
+LEARNING_RATE = 0.001
 columns = ["date","period","nswprice","nswdemand","vicprice","vicdemand","class"]
-NAME = "{}-SEQ-{}-EPOCHS-{}-BATCH_SIZE-{}".format(seq_len,EPOCHS,BATCH_SIZE,int(time.time()))
+NAME = "{}-SEQ-{}-EPOCHS-{}-BATCH_SIZE-{}-LOSS{}-VAL_PERCENT{}".format(seq_len,EPOCHS,BATCH_SIZE,int(time.time()),LEARNING_RATE,VAL_PERCENT)
 data = data[["date","period","nswprice","nswdemand","class"]]
+
 
 
 def preprocess(df):
@@ -72,7 +75,7 @@ def preprocess(df):
 
 times = sorted(data.index.values)
 
-last_5pct = times[-int(0.05*len(times))] ## all values above this number are the last 5%
+last_5pct = times[-int((VAL_PERCENT/100)*len(times))] ## all values above this number are the last 5%
 
 validation_data = data[(data.index >= last_5pct)] ## validation is a list of the last 5% of data
 main_data = data[(data.index < last_5pct)]
@@ -108,7 +111,7 @@ model.add(Dropout(0.2))
 model.add(Dense(2,activation="softmax"))
 
 
-opt = tf.keras.optimizers.Adam(lr=0.001,decay=1e-6)
+opt = tf.keras.optimizers.Adam(lr=LEARNING_RATE,decay=1e-6)
 
 model.compile(loss='sparse_categorical_crossentropy',optimizer = opt,metrics=['accuracy'])
 
