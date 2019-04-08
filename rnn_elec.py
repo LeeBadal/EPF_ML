@@ -4,12 +4,13 @@ import random
 import numpy as np
 import time
 import tensorflow as tf
+from tensorflow.keras.layers import CuDNNLSTM, Dense, Dropout, BatchNormalization
 from tensorflow.python.keras.models import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout, LSTM, BatchNormalization
+#from tensorflow.python.keras.layers import Dense, Dropout, LSTM, BatchNormalization
 from tensorflow.python.keras.callbacks import TensorBoard,ModelCheckpoint
 ## All data is normalized
 #data is normalized, target class UP or DOWN depending on previsous 24h
-# TO RUN TENSORBOARD: cd /afs/kth.se/home/b/a/badal/.local/lib/python3.5/site-packages/nsorboard
+# TO RUN TENSORBOARD: cd /afs/kth.se/home/b/a/badal/.local/lib/python3.5/site-packages/tensorboard
 # then: python3 main.py --logdir=/afs/kth.se/home/b/a/badal/EPF_ML/logs
 
 pd.set_option('display.max_columns', 30)
@@ -85,15 +86,19 @@ validation_x,validation_y = preprocess(validation_data)
 
 print("train data: {} validation: {}".format(len(train_x),len(validation_x)))
 
-
+fixshape = train_x.shape[1]
 
 model = Sequential()
 
-model.add(LSTM(128,input_shape=(train_x.shape[1:]),activation = 'relu', return_sequences = True))
+model.add(CuDNNLSTM(128,input_shape=(train_x.shape[1:]), return_sequences = True))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
-model.add(LSTM(128,activation = 'relu'))
+model.add(CuDNNLSTM(128,input_shape=(train_x.shape[1:]),return_sequences = True))
+model.add(Dropout(0.1))
+model.add(BatchNormalization())
+
+model.add(CuDNNLSTM(128,input_shape=(train_x.shape[1:])))
 model.add(Dropout(0.2))
 model.add(BatchNormalization())
 
@@ -103,9 +108,9 @@ model.add(Dropout(0.2))
 model.add(Dense(2,activation="softmax"))
 
 
-opt = tf.keras.optimizers.Adam(lr=0.00001,decay=1e-6)
+opt = tf.keras.optimizers.Adam(lr=0.001,decay=1e-6)
 
-model.compile(loss='mean_squared_error',optimizer = opt,metrics=['accuracy'])
+model.compile(loss='sparse_categorical_crossentropy',optimizer = opt,metrics=['accuracy'])
 
 tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
