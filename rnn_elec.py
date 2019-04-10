@@ -25,7 +25,36 @@ columns = ["date","period","nswprice","nswdemand","vicprice","vicdemand","class"
 NAME = "{}-SEQ-{}-EPOCHS-{}-BATCH_SIZE-{}-LOSS{}-VAL_PERCENT{}".format(seq_len,EPOCHS,BATCH_SIZE,int(time.time()),LEARNING_RATE,VAL_PERCENT)
 pd.set_option('display.max_columns', 30)
 data = pd.read_csv("electricity-normalized.csv")
-data = data[["nswprice","class"]]
+data = data[["date","period","nswprice","nswdemand","class"]]
+
+
+
+
+
+
+def classify(df):
+    prev_price = 0
+    for i,r in df.iterrows():
+        try:
+            if r['nswprice'] <= df.at[i+1,'nswprice']:
+                df.at[i,'class'] = 'UP'
+            else:
+                df.at[i,'class'] = 'DOWN'
+        except:
+            df.at[i,'class'] = 'DOWN'
+
+
+    #print(df.head())
+    return df
+
+
+## tillsätt 
+
+
+
+
+
+data= classify(data)
 
 TEST_PERCENT = 20
 
@@ -96,7 +125,7 @@ def main():
 
     filepath = "RNN_Final-{epoch:02d}-{val_acc:.4f}"
 
-    checkpoint = ModelCheckpoint("models/{}.model".format(filepath,monitor='val_acc',verbose=1,save_best_only=True,mode='max'))
+    checkpoint = ModelCheckpoint("models/1/{}.model".format(filepath,monitor='val_acc',verbose=1,save_best_only=True,mode='max'))
 
     history = model.fit(
     train_x,train_y,
@@ -145,6 +174,9 @@ def preprocess(df):
         y.append(target)
 
     return np.array(x),y
+
+
+
 
 
 if __name__ == "__main__":

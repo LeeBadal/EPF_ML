@@ -14,7 +14,7 @@ def main():
 
 
     predict_x,predict_y = preprocesstest(testing_data)
-    modelpath = "models/RNN_Final-01-0.5189.model"
+    modelpath = "models/1/RNN_Final-10-0.5497.model"
 
 
     model = tf.keras.models.load_model(modelpath)
@@ -25,20 +25,9 @@ def main():
 
 
     predict_loss,predict_accuracy = model.evaluate(predict_x,predict_y,verbose=0)
-    predict_single = model.predict(predict_x)
-
-    # i= 0
-    # while i < len(prediction):
-    #     print(prediction[i])
-    #     i +=1
 
     print(predict_loss,predict_accuracy)
-    print(predict_single[0])
-    print(predict_single[1])
-    print(predict_single[2])
-    print(predict_single[3])
-    print(predict_single[4])
-    print(predict_single[5])
+
 
 
 
